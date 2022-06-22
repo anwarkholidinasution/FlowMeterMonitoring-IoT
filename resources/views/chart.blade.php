@@ -1,3 +1,4 @@
+@dd($flowrate)
 <!doctype html>
 <html lang="en">
   <head>
@@ -83,12 +84,17 @@
             }
 
             updateChart();
-            setInterval(() => {
-                updateChart();
-            }, 1000);
+            // setInterval(() => {
+            //     updateChart();
+            // }, 1000);
 
         });
     </script>
+
+    {{-- <script>
+        let flowratte = 'aku';
+        cons.log(flowratte);
+    </script> --}}
 
   </body>
 </html>

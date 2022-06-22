@@ -23,7 +23,7 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 Flowrate</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">100</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="flowrate1"></span></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -41,7 +41,7 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                 Velocity</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">200</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="velocity1"></span></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -57,20 +57,27 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Totalizer
-                            </div>
-                            <div class="row no-gutters align-items-center">
-                                <div class="col-auto">
-                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">300</div>
-                                </div>
-                                <div class="col">
-                                    <div class="progress progress-sm mr-2">
-                                        <div class="progress-bar bg-info" role="progressbar"
-                                            style="width: 50%" aria-valuenow="50" aria-valuemin="0"
-                                            aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Totalizer</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="totalizer1"></span></div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings (Monthly) Card Example -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-dark shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">
+                                Time</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="jam1"></span></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
@@ -187,14 +194,68 @@
     <script src="{{ asset('assets/calendar/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/calendar/js/main.js') }}"></script>
 
+    <!-- script node js untuk menggunakan mqtt -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
 
+    <script type="text/javascript">
+        // Create a client instance
+        // ############# ATTENTION: Enter Your MQTT TLS Port and host######## Supports only TLS Port
+        client = new Paho.MQTT.Client("broker.emqx.io", 8084, "web_" + parseInt(Math.random() * 100, 10));
 
-     <!-- Page level plugins -->
-    {{-- <script src="{{ asset('assets/vendor/chart.js/Chart.min.js') }}"></script>
+        // set callback handlers
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
 
-    <!-- Page level custom scripts -->
-    <script src="{{ asset('assets/js/demo/chart-area-demo.js') }}"></script>
-    <script src="{{ asset('assets/js/demo/chart-pie-demo.js') }}"></script> --}}
+        //############# ATTENTION: Enter Your MQTT user and password details ########
+        var options = {
+            useSSL: true,
+            userName: "",
+            password: "",
+            onSuccess: onConnect,
+            onFailure: doFail
+        }
+
+        // connect the client
+        client.connect(options);
+
+        // called when the client connects
+        function onConnect() {
+            // Once a connection has been made, make a subscription and send a message.
+            console.log("onConnect");
+            client.subscribe("/sensor/testflow1");
+            client.subscribe("/sensor/testflow");
+            // client.query('INSERT INTO tb_iot VALUES ')
+            // client.subscribe("test/dht11/humidity");
+        }
+
+        function doFail(e) {
+            console.log(e);
+        }
+
+        // called when the client loses its connection
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("onConnectionLost:" + responseObject.errorMessage);
+            }
+        }
+
+        // called when a message arrives
+        function onMessageArrived(message) {
+            if (message.destinationName == "/sensor/testflow1") {
+
+                // console.log(JSON.stringify(message.payloadString));
+                var jso = JSON.parse(message.payloadString);
+                const unixTime = jso['TIME'];
+                const date = new Date(unixTime * 1000);
+                const jam = date.toLocaleString("id-ID");
+
+                document.getElementById("flowrate1").innerHTML = jso['flowrate'];
+                document.getElementById("velocity1").innerHTML = jso['flowspeed'];
+                document.getElementById("totalizer1").innerHTML = jso['totalizer'];
+                document.getElementById("jam1").innerHTML = jam;
+            }
+        }
+    </script>
     @endpush
 
 </x-app-layout>

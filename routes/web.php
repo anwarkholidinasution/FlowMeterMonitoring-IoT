@@ -4,11 +4,15 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Main\DashboardController;
 use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\SensorController;
 use App\Models\Place;
 use Illuminate\Support\Facades\Route;
 
+// Dashboard
 Route::get('/', [DashboardController::class, 'dashboard'])->name('dashboard')->middleware('auth');
+Route::view('dashboard2','main.dashboard2');
 
+// View Place
 Route::controller(PlaceController::class)->prefix('place')->name('place.')->middleware('auth')->group(function() {
     Route::get('loa-lepu', 'loaLepu')->name('loaLepu');
 });
@@ -26,10 +30,13 @@ Route::controller(RegisterController::class)->middleware('guest')->name('user.')
     Route::post('register', 'cekRegister')->name('cekRegister');
 });
 
+// Get MQTT
+Route::controller(SensorController::class)->middleware('auth')->group(function() {
+    Route::get('mqtt', 'getMqtt');
+    Route::get('data-mqtt', 'getData');
+});
 
-
-
-// Coba Chart
+// Real Time Chart
 Route::get('chart', function() {
     return response()->view('chart');
 });
